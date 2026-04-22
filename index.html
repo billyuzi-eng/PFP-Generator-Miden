@@ -106,11 +106,13 @@
 
         <div class="ctrl-row">
           <span class="section-label" style="margin:0">Badge</span>
-          <div class="opts" id="bd-opts">
-            <button class="opt on" data-v="miden">MIDEN</button>
-            <button class="opt" data-v="builder">Builder</button>
-            <button class="opt" data-v="none">None</button>
-          </div>
+       <div class="opts" id="bd-opts">
+  <button class="opt on" data-v="miden">Tester</button>
+  <button class="opt" data-v="builder">Builder</button>
+  <button class="opt" data-v="creator">Creator</button>
+  <button class="opt" data-v="dev">Developer</button>
+  <button class="opt" data-v="none">None</button>
+</div>
         </div>
 
         <button class="gen-btn" id="gen-btn" disabled>Generate PFP</button>
@@ -356,7 +358,12 @@ function drawMidenBranding(logo) {
 
 function drawBadge() {
   if (selBd === 'none') return;
-  const label = selBd === 'miden' ? 'MIDEN COMMUNITY' : 'BUILDER';
+  let label = '';
+
+if (selBd === 'miden') label = 'Tester';
+else if (selBd === 'builder') label = 'BUILDER';
+else if (selBd === 'creator') label = 'CONTENT CREATOR';
+else if (selBd === 'dev') label = 'DEVELOPER';
   ctx.save();
   ctx.font = '600 18px Orbitron, monospace';
   const tw = ctx.measureText(label).width;
