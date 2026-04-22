@@ -196,6 +196,7 @@ function render() {
   loadMidenLogo(logo => {
     drawMidenBranding(logo);
     drawBadge();
+    drawSuit();
     drawName();
     cvPh.style.display = 'none';
     cv.style.display = 'block';
@@ -408,6 +409,45 @@ function drawName() {
 }
 
 function rrect(x, y, w, h, r) {
+  function drawSuit() {
+  const cx = S/2;
+  const cy = S/2;
+  const r = S*0.35;
+
+  ctx.save();
+
+  // helmet
+  ctx.strokeStyle = "rgba(255,255,255,0.9)";
+  ctx.lineWidth = 6;
+  ctx.beginPath();
+  ctx.arc(cx, cy, r+10, 0, Math.PI*2);
+  ctx.stroke();
+
+  // suit body
+  ctx.beginPath();
+  ctx.roundRect(cx - r*0.7, cy - r*0.2, r*1.4, r*1.6, 20);
+  ctx.stroke();
+
+  // orange tech lines
+  ctx.strokeStyle = "#e8540a";
+  ctx.lineWidth = 2;
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - r);
+  ctx.lineTo(cx, cy + r);
+  ctx.stroke();
+
+  ctx.beginPath();
+  ctx.moveTo(cx - r*0.5, cy);
+  ctx.lineTo(cx + r*0.5, cy);
+  ctx.stroke();
+
+  // backpack
+  ctx.fillStyle = "rgba(255,255,255,0.85)";
+  ctx.fillRect(cx + r*0.6, cy - r*0.3, 40, 70);
+
+  ctx.restore();
+}
   ctx.beginPath();
   ctx.moveTo(x+r, y);
   ctx.lineTo(x+w-r, y);
