@@ -4,141 +4,414 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Miden PFP Generator</title>
+</head>
+
+<body>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;600;700&display=swap');
 
 * { box-sizing: border-box; }
 
-body { background:#0d0d0d; margin:0; }
-
 .w { background: #0d0d0d; border-radius: 16px; padding: 28px; font-family: 'Share Tech Mono', monospace; color: #f0ece4; }
+
+.top-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.brand { display: flex; align-items: center; gap: 10px; }
+.brand-logo { height: 28px; }
+.brand-tag { font-size: 10px; letter-spacing: 3px; color: #5a5040; text-transform: uppercase; }
 
 .layout { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
 @media(max-width:560px){ .layout { grid-template-columns:1fr; } }
 
-.section-label { font-size: 10px; letter-spacing: 2px; color: #5a5040; margin-bottom: 10px; text-transform: uppercase; }
+.section-label { font-size: 10px; letter-spacing: 2px; color: #5a5040; margin: 0 0 10px; text-transform: uppercase; }
 
-.upload-zone { border: 1px dashed #2a2520; border-radius: 8px; background: #111; padding: 24px; text-align: center; cursor: pointer; position: relative; }
-#file-in { position:absolute; inset:0; opacity:0; cursor:pointer; }
+.upload-zone { border: 1px dashed #2a2520; border-radius: 8px; background: #111; padding: 24px 12px; text-align: center; cursor: pointer; transition: border-color .2s, background .2s; position: relative; min-height: 110px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+.upload-zone:hover, .upload-zone.over { border-color: #e8540a; background: #181210; }
+.upload-icon { color: #e8540a; font-size: 22px; }
+.upload-text { font-size: 11px; color: #5a5040; line-height: 1.6; }
+.upload-text strong { color: #b84208; display: block; font-size: 12px; }
+#file-in { position: absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
 
-.opts { display:flex; gap:6px; flex-wrap:wrap; }
-.opt { padding:5px 10px; background:#111; border:1px solid #2a2520; color:#5a5040; cursor:pointer; }
-.opt.on { background:#e8540a; color:#000; border-color:#e8540a; }
+.ctrl-block { margin-top: 14px; display: flex; flex-direction: column; gap: 12px; }
+.ctrl-row { display: flex; flex-direction: column; gap: 5px; }
+.opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.opt { font-family: 'Share Tech Mono', monospace; font-size: 11px; padding: 5px 11px; background: #111; border: 1px solid #2a2520; border-radius: 4px; color: #5a5040; cursor: pointer; transition: all .15s; letter-spacing: 1px; }
+.opt:hover { border-color: #e8540a; color: #e8540a; }
+.opt.on { border-color: #e8540a; color: #0d0d0d; background: #e8540a; }
 
-.gen-btn, .dl-btn { margin-top:10px; padding:10px; width:100%; cursor:pointer; }
+.name-input { width: 100%; font-family: 'Share Tech Mono', monospace; font-size: 13px; padding: 9px 12px; background: #111; border: 1px solid #2a2520; border-radius: 6px; color: #f0ece4; outline: none; transition: border-color .2s; letter-spacing: 1px; }
+.name-input:focus { border-color: #e8540a; }
+.name-input::placeholder { color: #2a2520; }
 
-.cv-wrap { position:relative; border:1px solid #2a2520; aspect-ratio:1; display:flex; align-items:center; justify-content:center; }
-#pfp-cv { width:100%; height:100%; display:none; }
+.gen-btn { width: 100%; margin-top: 6px; padding: 13px; font-family: 'Orbitron', monospace; font-size: 12px; font-weight: 700; letter-spacing: 3px; background: transparent; border: 1px solid #e8540a; color: #e8540a; border-radius: 6px; cursor: pointer; transition: all .2s; text-transform: uppercase; }
+.gen-btn:hover:not(:disabled) { background: #e8540a; color: #0d0d0d; }
+.gen-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+.preview-col { display: flex; flex-direction: column; gap: 12px; }
+.cv-wrap { position: relative; border-radius: 8px; overflow: hidden; border: 1px solid #2a2520; background: #111; aspect-ratio: 1; display: flex; align-items: center; justify-content: center; }
+.cv-ph { text-align: center; color: #2a2520; font-size: 11px; letter-spacing: 1px; line-height: 2.2; }
+#pfp-cv { width: 100%; height: 100%; display: none; }
+
+.dl-btn { width: 100%; padding: 11px; font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; background: transparent; border: 1px solid #2a2520; color: #5a5040; border-radius: 6px; cursor: pointer; transition: all .2s; }
+.dl-btn:hover:not(:disabled) { border-color: #e8540a; color: #e8540a; }
+.dl-btn:disabled { opacity: .3; cursor: not-allowed; }
+
+.tip { font-size: 10px; color: #2a2520; text-align: center; letter-spacing: 1px; margin-top: 14px; }
 </style>
-</head>
-
-<body>
 
 <div class="w">
+  <h2 class="sr-only" style="position:absolute;left:-9999px">Miden PFP Generator — upload a photo and get a Miden-branded profile picture</h2>
+  <div class="top-bar">
+    <div class="brand">
+      <img class="brand-logo" src="https://cdn.prod.website-files.com/696f30104ad6945a358d99b2/6971b09867332c971e4516b3_miden-logo.svg" alt="Miden" crossorigin="anonymous">
+    </div>
+    <span class="brand-tag">PFP Generator</span>
+  </div>
+
   <div class="layout">
-
     <div>
-      <p class="section-label">Upload</p>
-      <div class="upload-zone">
+      <p class="section-label">// 01. Upload your photo</p>
+      <div class="upload-zone" id="dz">
         <input type="file" id="file-in" accept="image/*">
-        Upload Image
+        <div class="upload-icon">↑</div>
+        <div class="upload-text"><strong>Click or drag & drop</strong>JPG · PNG · WEBP</div>
       </div>
 
-      <p class="section-label">Badge</p>
-      <div class="opts" id="bd-opts">
-        <button class="opt on" data-v="miden">MIDEN</button>
-        <button class="opt" data-v="builder">Builder</button>
-        <button class="opt" data-v="creator">Creator</button>
-        <button class="opt" data-v="dev">Developer</button>
-        <button class="opt" data-v="none">None</button>
-      </div>
+      <div class="ctrl-block">
+        <p class="section-label" style="margin:0">// 02. Customize</p>
 
-      <button class="gen-btn" id="gen-btn" disabled>Generate</button>
+        <div class="ctrl-row">
+          <span class="section-label" style="margin:0">Your name</span>
+          <input class="name-input" id="usr-name" type="text" placeholder="e.g. 0x_Alice" maxlength="22">
+        </div>
+
+        <div class="ctrl-row">
+          <span class="section-label" style="margin:0">Background</span>
+          <div class="opts" id="bg-opts">
+            <button class="opt on" data-v="grid">Grid</button>
+            <button class="opt" data-v="cubes">Cubes</button>
+            <button class="opt" data-v="circuit">Circuit</button>
+            <button class="opt" data-v="noise">Noise</button>
+          </div>
+        </div>
+
+        <div class="ctrl-row">
+          <span class="section-label" style="margin:0">Frame</span>
+          <div class="opts" id="fr-opts">
+            <button class="opt on" data-v="orange">Orange</button>
+            <button class="opt" data-v="white">White</button>
+            <button class="opt" data-v="none">None</button>
+          </div>
+        </div>
+
+        <div class="ctrl-row">
+          <span class="section-label" style="margin:0">Badge</span>
+          <div class="opts" id="bd-opts">
+            <button class="opt on" data-v="miden">MIDEN</button>
+            <button class="opt" data-v="builder">Builder</button>
+            <button class="opt" data-v="none">None</button>
+          </div>
+        </div>
+
+        <button class="gen-btn" id="gen-btn" disabled>Generate PFP</button>
+      </div>
     </div>
 
-    <div>
-      <p class="section-label">Preview</p>
+    <div class="preview-col">
+      <p class="section-label">// 03. Preview</p>
       <div class="cv-wrap">
+        <div class="cv-ph" id="cv-ph">AWAITING<br>UPLOAD...</div>
         <canvas id="pfp-cv"></canvas>
       </div>
-      <button class="dl-btn" id="dl-btn" disabled>Download</button>
+      <button class="dl-btn" id="dl-btn" disabled>⬇ Download 800×800 PNG</button>
     </div>
-
   </div>
+  <p class="tip">// processed entirely in your browser — no data is sent anywhere //</p>
 </div>
 
 <script>
 const S = 800;
 const fileIn = document.getElementById('file-in');
+const dz = document.getElementById('dz');
 const genBtn = document.getElementById('gen-btn');
 const dlBtn = document.getElementById('dl-btn');
 const cv = document.getElementById('pfp-cv');
 const ctx = cv.getContext('2d');
+const cvPh = document.getElementById('cv-ph');
+const nameIn = document.getElementById('usr-name');
 
 let img = null;
-let selBd = 'miden';
+let selBg = 'grid', selFr = 'orange', selBd = 'miden';
+let midenLogoImg = null;
 
-document.querySelectorAll('#bd-opts .opt').forEach(b => {
-  b.onclick = () => {
-    document.querySelectorAll('#bd-opts .opt').forEach(x=>x.classList.remove('on'));
-    b.classList.add('on');
-    selBd = b.dataset.v;
-    if(img) render();
-  }
-});
+function optGroup(id, setter) {
+  document.getElementById(id).querySelectorAll('.opt').forEach(b => {
+    b.addEventListener('click', () => {
+      document.getElementById(id).querySelectorAll('.opt').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      setter(b.dataset.v);
+      if (img) render();
+    });
+  });
+}
+optGroup('bg-opts', v => selBg = v);
+optGroup('fr-opts', v => selFr = v);
+optGroup('bd-opts', v => selBd = v);
+nameIn.addEventListener('input', () => { if (img) render(); });
 
-fileIn.onchange = e => {
+fileIn.addEventListener('change', e => { if (e.target.files[0]) loadImg(e.target.files[0]); });
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('over'); if (e.dataTransfer.files[0]) loadImg(e.dataTransfer.files[0]); });
+genBtn.addEventListener('click', render);
+dlBtn.addEventListener('click', () => { const a = document.createElement('a'); a.download = 'miden-pfp.png'; a.href = cv.toDataURL('image/png'); a.click(); });
+
+function loadImg(file) {
   const r = new FileReader();
   r.onload = ev => {
     const i = new Image();
-    i.onload = () => { img=i; genBtn.disabled=false; render(); };
+    i.onload = () => { img = i; genBtn.disabled = false; render(); };
     i.src = ev.target.result;
   };
-  r.readAsDataURL(e.target.files[0]);
-};
-
-genBtn.onclick = render;
-
-dlBtn.onclick = () => {
-  const a=document.createElement('a');
-  a.href=cv.toDataURL();
-  a.download='pfp.png';
-  a.click();
-};
-
-function render(){
-  cv.width=S; cv.height=S;
-  ctx.fillStyle='#111'; ctx.fillRect(0,0,S,S);
-
-  const r=S*0.35;
-  ctx.save();
-  ctx.beginPath(); ctx.arc(S/2,S/2,r,0,Math.PI*2); ctx.clip();
-  ctx.drawImage(img, S/2-r, S/2-r, r*2, r*2);
-  ctx.restore();
-
-  drawBadge();
-
-  cv.style.display='block';
-  dlBtn.disabled=false;
+  r.readAsDataURL(file);
 }
 
-function drawBadge(){
-  if(selBd==='none') return;
+function loadMidenLogo(cb) {
+  if (midenLogoImg) { cb(midenLogoImg); return; }
+  const i = new Image();
+  i.crossOrigin = 'anonymous';
+  i.onload = () => { midenLogoImg = i; cb(i); };
+  i.onerror = () => cb(null);
+  i.src = 'https://cdn.prod.website-files.com/696f30104ad6945a358d99b2/6971b09867332c971e4516b3_miden-logo.svg';
+}
 
-  let label='';
-  if(selBd==='miden') label='MIDEN';
-  else if(selBd==='builder') label='BUILDER';
-  else if(selBd==='creator') label='CONTENT CREATOR';
-  else if(selBd==='dev') label='DEVELOPER';
+function render() {
+  cv.width = S; cv.height = S;
+  ctx.clearRect(0, 0, S, S);
+  drawBg();
+  drawUserPhoto();
+  drawFrame();
+  loadMidenLogo(logo => {
+    drawMidenBranding(logo);
+    drawBadge();
+    drawName();
+    cvPh.style.display = 'none';
+    cv.style.display = 'block';
+    dlBtn.disabled = false;
+  });
+}
 
-  ctx.fillStyle='#e8540a';
-  ctx.fillRect(200,650,400,60);
+function drawBg() {
+  ctx.fillStyle = '#0d0d0d';
+  ctx.fillRect(0, 0, S, S);
 
-  ctx.fillStyle='#000';
-  ctx.font='20px Arial';
-  ctx.textAlign='center';
-  ctx.fillText(label,400,690);
+  if (selBg === 'grid') {
+    ctx.strokeStyle = 'rgba(232,84,10,0.12)';
+    ctx.lineWidth = 0.8;
+    for (let x = 0; x <= S; x += 40) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,S); ctx.stroke(); }
+    for (let y = 0; y <= S; y += 40) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(S,y); ctx.stroke(); }
+    ctx.strokeStyle = 'rgba(232,84,10,0.22)';
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= S; x += 200) { ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,S); ctx.stroke(); }
+    for (let y = 0; y <= S; y += 200) { ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(S,y); ctx.stroke(); }
+
+  } else if (selBg === 'cubes') {
+    const cubeData = [[120,120,60],[300,80,45],[560,100,55],[680,200,40],[80,400,50],[200,580,42],[480,520,58],[660,480,38],[350,680,45],[600,680,50]];
+    cubeData.forEach(([cx,cy,sz]) => { drawCube(cx, cy, sz, 'rgba(232,84,10,0.18)', 'rgba(232,84,10,0.08)', 'rgba(232,84,10,0.13)'); });
+
+  } else if (selBg === 'circuit') {
+    ctx.strokeStyle = 'rgba(232,84,10,0.15)';
+    ctx.lineWidth = 1;
+    const segs = [[0,160,S,160],[0,640,S,640],[160,0,160,S],[640,0,640,S],[0,400,S,400],[400,0,400,S]];
+    segs.forEach(([x1,y1,x2,y2]) => { ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke(); });
+    const nodes = [[160,160],[160,400],[160,640],[400,160],[400,400],[400,640],[640,160],[640,400],[640,640]];
+    ctx.fillStyle = 'rgba(232,84,10,0.25)';
+    nodes.forEach(([x,y]) => { ctx.beginPath(); ctx.arc(x,y,6,0,Math.PI*2); ctx.fill(); });
+    ctx.strokeStyle = 'rgba(232,84,10,0.08)';
+    ctx.lineWidth = 0.5;
+    for (let x=0;x<=S;x+=40){ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,S);ctx.stroke();}
+    for (let y=0;y<=S;y+=40){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(S,y);ctx.stroke();}
+
+  } else if (selBg === 'noise') {
+    for (let i = 0; i < 3000; i++) {
+      const x = Math.random()*S, y = Math.random()*S;
+      const a = Math.random()*0.35;
+      ctx.fillStyle = `rgba(232,84,10,${a})`;
+      ctx.fillRect(x, y, Math.random()*2+0.5, Math.random()*2+0.5);
+    }
+    const lg = ctx.createLinearGradient(0,0,S,S);
+    lg.addColorStop(0,'rgba(50,20,5,0.6)');
+    lg.addColorStop(1,'rgba(5,5,5,0.6)');
+    ctx.fillStyle = lg;
+    ctx.fillRect(0,0,S,S);
+  }
+
+  const vign = ctx.createRadialGradient(S/2,S/2,S*0.25,S/2,S/2,S*0.72);
+  vign.addColorStop(0,'rgba(0,0,0,0)');
+  vign.addColorStop(1,'rgba(0,0,0,0.75)');
+  ctx.fillStyle = vign;
+  ctx.fillRect(0,0,S,S);
+}
+
+function drawCube(cx, cy, sz, top, left, right) {
+  const h = sz * 0.58;
+  ctx.beginPath();
+  ctx.moveTo(cx, cy - h);
+  ctx.lineTo(cx + sz, cy - h/2);
+  ctx.lineTo(cx + sz, cy + h/2);
+  ctx.lineTo(cx, cy + h);
+  ctx.lineTo(cx - sz, cy + h/2);
+  ctx.lineTo(cx - sz, cy - h/2);
+  ctx.closePath();
+  ctx.fillStyle = top;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + h);
+  ctx.lineTo(cx + sz, cy + h/2);
+  ctx.lineTo(cx + sz, cy + h/2 + h);
+  ctx.lineTo(cx, cy + h*2);
+  ctx.closePath();
+  ctx.fillStyle = right;
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.moveTo(cx, cy + h);
+  ctx.lineTo(cx - sz, cy + h/2);
+  ctx.lineTo(cx - sz, cy + h/2 + h);
+  ctx.lineTo(cx, cy + h*2);
+  ctx.closePath();
+  ctx.fillStyle = left;
+  ctx.fill();
+}
+
+function drawUserPhoto() {
+  const r = S * 0.38;
+  const cx = S/2, cy = S/2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(cx, cy, r, 0, Math.PI*2);
+  ctx.clip();
+  const sw = img.width, sh = img.height;
+  const sc = Math.max((r*2)/sw, (r*2)/sh);
+  const dw = sw*sc, dh = sh*sc;
+  ctx.drawImage(img, cx - dw/2, cy - dh/2, dw, dh);
+  ctx.restore();
+}
+
+function drawFrame() {
+  const cx = S/2, cy = S/2, r = S*0.38;
+  if (selFr === 'none') return;
+  const color = selFr === 'orange' ? '#e8540a' : '#f0ece4';
+  const dimColor = selFr === 'orange' ? 'rgba(232,84,10,0.3)' : 'rgba(240,236,228,0.25)';
+
+  ctx.save();
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 3.5;
+  ctx.beginPath(); ctx.arc(cx, cy, r, 0, Math.PI*2); ctx.stroke();
+
+  ctx.strokeStyle = dimColor;
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.arc(cx, cy, r + 14, 0, Math.PI*2); ctx.stroke();
+  ctx.beginPath(); ctx.arc(cx, cy, r + 22, 0, Math.PI*2); ctx.stroke();
+
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  const ticks = 24;
+  for (let i = 0; i < ticks; i++) {
+    const angle = (i / ticks) * Math.PI * 2 - Math.PI/2;
+    const inner = r + 16, outer = r + 22;
+    ctx.beginPath();
+    ctx.moveTo(cx + inner*Math.cos(angle), cy + inner*Math.sin(angle));
+    ctx.lineTo(cx + outer*Math.cos(angle), cy + outer*Math.sin(angle));
+    ctx.stroke();
+  }
+
+  ctx.strokeStyle = dimColor;
+  ctx.lineWidth = 1;
+  const dotR = r + 32;
+  [0, Math.PI/2, Math.PI, Math.PI*1.5].forEach(a => {
+    ctx.beginPath(); ctx.arc(cx + dotR*Math.cos(a), cy + dotR*Math.sin(a), 4, 0, Math.PI*2); ctx.stroke();
+  });
+  ctx.restore();
+}
+
+function drawMidenBranding(logo) {
+  if (logo) {
+    const lw = 160, lh = 40;
+    ctx.save();
+    ctx.globalAlpha = 0.9;
+    ctx.drawImage(logo, S/2 - lw/2, 38, lw, lh);
+    ctx.restore();
+  } else {
+    ctx.save();
+    ctx.fillStyle = '#e8540a';
+    ctx.font = '700 28px Orbitron, monospace';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('MIDEN', S/2, 58);
+    ctx.restore();
+  }
+}
+
+function drawBadge() {
+  if (selBd === 'none') return;
+  const label = selBd === 'miden' ? 'MIDEN COMMUNITY' : 'BUILDER';
+  ctx.save();
+  ctx.font = '600 18px Orbitron, monospace';
+  const tw = ctx.measureText(label).width;
+  const bw = tw + 36, bh = 36;
+  const bx = S/2 - bw/2, by = S - 88;
+
+  ctx.fillStyle = '#e8540a';
+  rrect(bx, by, bw, bh, 5);
+  ctx.fill();
+
+  ctx.fillStyle = '#0d0d0d';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, S/2, by + bh/2 + 1);
+  ctx.restore();
+}
+
+function drawName() {
+  const name = nameIn.value.trim();
+  if (!name) return;
+  ctx.save();
+  ctx.font = '500 26px Share Tech Mono, monospace';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+
+  const tw = ctx.measureText(name).width;
+  const pw = tw + 28, ph = 36;
+  const px = S/2 - pw/2, py = S - 44;
+
+  ctx.fillStyle = 'rgba(13,13,13,0.75)';
+  rrect(px, py, pw, ph, 4);
+  ctx.fill();
+
+  ctx.strokeStyle = 'rgba(232,84,10,0.5)';
+  ctx.lineWidth = 1;
+  rrect(px, py, pw, ph, 4);
+  ctx.stroke();
+
+  ctx.fillStyle = '#f0ece4';
+  ctx.fillText(name, S/2, py + ph/2 + 1);
+  ctx.restore();
+}
+
+function rrect(x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x+r, y);
+  ctx.lineTo(x+w-r, y);
+  ctx.quadraticCurveTo(x+w, y, x+w, y+r);
+  ctx.lineTo(x+w, y+h-r);
+  ctx.quadraticCurveTo(x+w, y+h, x+w-r, y+h);
+  ctx.lineTo(x+r, y+h);
+  ctx.quadraticCurveTo(x, y+h, x, y+h-r);
+  ctx.lineTo(x, y+r);
+  ctx.quadraticCurveTo(x, y, x+r, y);
+  ctx.closePath();
 }
 </script>
 
